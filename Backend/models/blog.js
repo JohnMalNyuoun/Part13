@@ -17,7 +17,13 @@ const create = async ({ title, author, url, likes = 0 }) => {
   return result.rows[0]
 }
 
+const deleteById = async (id) => {
+  const result = await database.query('DELETE FROM blogs WHERE id = $1', [id])
+  return result.rowCount > 0
+}
+
 module.exports = {
   findAll,
   create,
+  deleteById,
 }
