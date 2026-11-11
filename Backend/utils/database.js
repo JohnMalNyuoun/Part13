@@ -1,3 +1,5 @@
+const fs = require('fs')
+const path = require('path')
 const { Pool } = require('pg')
 const config = require('./config')
 
@@ -9,8 +11,17 @@ const getPool = () => {
   }
 
   if (!pool) {
+    const connectionUrl = new URL(config.DATABASE_URL)
+    for (const parameter of ['sslmode', 'sslrootcert', 'sslcert', 'sslkey']) {
+      connectionUrl.searchParams.delete(parameter)
+    }
+
     pool = new Pool({
-      connectionString: config.DATABASE_URL,
+      connectionString: connectionUrl.toString(),
+      ssl: {
+        ca: fs.readFileSync(path.join(__dirname, '..', 'ca.pem'), 'utf8'),
+        rejectUnauthorized: true,
+      },
     })
   }
 
