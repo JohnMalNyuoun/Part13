@@ -40,7 +40,16 @@ const initializeDatabase = async () => {
   `)
 }
 
+const close = async () => {
+  if (pool) {
+    const activePool = pool
+    pool = undefined
+    await activePool.end()
+  }
+}
+
 module.exports = {
   query: (text, params) => getPool().query(text, params),
   initializeDatabase,
+  close,
 }
