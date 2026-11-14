@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node Backend/index.js"
+    "start": "node backend/index.js"
   }
 }

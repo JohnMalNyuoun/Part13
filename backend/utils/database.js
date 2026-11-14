@@ -7,7 +7,7 @@ let pool
 
 const getPool = () => {
   if (!config.DATABASE_URL) {
-    throw new Error('DATABASE_URL is missing. Add your PostgreSQL connection URL to Backend/.env.')
+    throw new Error('DATABASE_URL is missing. Add your PostgreSQL connection URL to backend/.env.')
   }
 
   if (!pool) {
