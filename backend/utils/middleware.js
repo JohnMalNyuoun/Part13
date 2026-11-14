@@ -12,20 +12,33 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
+const createHttpError = (status, message) => {
+  const error = new Error(message)
+  error.status = status
+  return error
+}
+
 const errorHandler = (error, request, response, next) => {
   logger.error(error.message)
 
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' })
-  } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message })
+  if (response.headersSent) {
+    return next(error)
   }
 
-  next(error)
+  const status = error.status || error.statusCode
+  const isClientDatabaseError = typeof error.code === 'string' &&
+    ['22', '23'].includes(error.code.slice(0, 2))
+  const statusCode = Number.isInteger(status) && status >= 400 && status < 600
+    ? status
+    : isClientDatabaseError ? 400 : 500
+  const message = statusCode < 500 ? error.message : 'Internal server error'
+
+  response.status(statusCode).json({ error: message })
 }
 
 module.exports = {
   requestLogger,
   unknownEndpoint,
+  createHttpError,
   errorHandler,
 }
