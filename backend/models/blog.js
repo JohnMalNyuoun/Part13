@@ -22,8 +22,20 @@ const deleteById = async (id) => {
   return result.rowCount > 0
 }
 
+const updateLikesById = async (id, likes) => {
+  const result = await database.query(
+    `UPDATE blogs
+     SET likes = $2
+     WHERE id = $1
+     RETURNING id, title, author, url, likes`,
+    [id, likes]
+  )
+  return result.rows[0] || null
+}
+
 module.exports = {
   findAll,
   create,
   deleteById,
+  updateLikesById,
 }
