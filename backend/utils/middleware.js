@@ -1,9 +1,14 @@
 const logger = require('./logger')
 
 const requestLogger = (request, response, next) => {
+  const loggedBody = { ...request.body }
+  if (Object.prototype.hasOwnProperty.call(loggedBody, 'password')) {
+    loggedBody.password = '[REDACTED]'
+  }
+
   logger.info('Method:', request.method)
   logger.info('Path:  ', request.path)
-  logger.info('Body:  ', request.body)
+  logger.info('Body:  ', loggedBody)
   logger.info('---')
   next()
 }

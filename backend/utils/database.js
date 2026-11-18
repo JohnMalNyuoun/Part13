@@ -38,6 +38,16 @@ const initializeDatabase = async () => {
       likes INTEGER DEFAULT 0
     )
   `)
+
+  await getPool().query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL CHECK (length(btrim(name)) > 0),
+      username TEXT NOT NULL UNIQUE CHECK (length(btrim(username)) > 0),
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
 }
 
 const close = async () => {
