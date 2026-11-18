@@ -15,7 +15,7 @@ const findAll = async (search) => {
      FROM blogs b
      LEFT JOIN users u ON u.id = b.user_id
      ${whereClause}
-     ORDER BY b.id`,
+     ORDER BY b.likes DESC NULLS LAST, b.id`,
     values
   )
   return result.rows
