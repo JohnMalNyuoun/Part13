@@ -1,7 +1,9 @@
 const database = require('../utils/database')
 
 const findAll = async (search) => {
-  const whereClause = search === undefined ? '' : 'WHERE b.title ILIKE $1'
+  const whereClause = search === undefined
+    ? ''
+    : 'WHERE (b.title ILIKE $1 OR b.author ILIKE $1)'
   const values = search === undefined
     ? []
     : [`%${search.replace(/[\\%_]/g, '\\$&')}%`]
