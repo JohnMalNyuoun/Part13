@@ -29,8 +29,19 @@ const create = async ({ title, author, url, likes = 0, userId }) => {
   return result.rows[0]
 }
 
-const deleteById = async (id) => {
-  const result = await database.query('DELETE FROM blogs WHERE id = $1', [id])
+const findById = async (id) => {
+  const result = await database.query(
+    'SELECT id, user_id AS "userId" FROM blogs WHERE id = $1',
+    [id]
+  )
+  return result.rows[0] || null
+}
+
+const deleteById = async (id, userId) => {
+  const result = await database.query(
+    'DELETE FROM blogs WHERE id = $1 AND user_id = $2',
+    [id, userId]
+  )
   return result.rowCount > 0
 }
 
@@ -56,6 +67,7 @@ const updateLikesById = async (id, likes) => {
 module.exports = {
   findAll,
   create,
+  findById,
   deleteById,
   updateLikesById,
 }

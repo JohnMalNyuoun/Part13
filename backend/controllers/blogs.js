@@ -31,13 +31,21 @@ blogsRouter.put('/:id', async (request, response) => {
   response.json(updatedBlog)
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogsRouter.delete('/:id', userExtractor, async (request, response) => {
   const id = Number(request.params.id)
   if (!Number.isInteger(id) || id < 1) {
     throw createHttpError(400, 'id must be a positive integer')
   }
 
-  const deleted = await Blog.deleteById(id)
+  const blog = await Blog.findById(id)
+  if (!blog) {
+    throw createHttpError(404, 'blog not found')
+  }
+  if (blog.userId !== request.user.id) {
+    throw createHttpError(403, 'only the blog owner can delete it')
+  }
+
+  const deleted = await Blog.deleteById(id, request.user.id)
   if (!deleted) {
     throw createHttpError(404, 'blog not found')
   }
