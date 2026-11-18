@@ -7,18 +7,20 @@ let pool
 
 const getPool = () => {
   if (!config.DATABASE_URL) {
-    throw new Error('DATABASE_URL is missing. Add your PostgreSQL connection URL to backend/.env.')
+    const setting = config.TESTING ? 'TEST_DATABASE_URL' : 'DATABASE_URL'
+    throw new Error(`${setting} is missing. Add your PostgreSQL connection URL to backend/.env.`)
   }
 
   if (!pool) {
     const connectionUrl = new URL(config.DATABASE_URL)
+    const sslMode = connectionUrl.searchParams.get('sslmode')
     for (const parameter of ['sslmode', 'sslrootcert', 'sslcert', 'sslkey']) {
       connectionUrl.searchParams.delete(parameter)
     }
 
     pool = new Pool({
       connectionString: connectionUrl.toString(),
-      ssl: {
+      ssl: sslMode === 'disable' ? false : {
         ca: fs.readFileSync(path.join(__dirname, '..', 'ca.pem'), 'utf8'),
         rejectUnauthorized: true,
       },
@@ -69,8 +71,13 @@ const close = async () => {
   }
 }
 
+const resetDatabase = async () => {
+  await getPool().query('TRUNCATE TABLE blogs, users RESTART IDENTITY CASCADE')
+}
+
 module.exports = {
   query: (text, params) => getPool().query(text, params),
   initializeDatabase,
+  resetDatabase,
   close,
 }

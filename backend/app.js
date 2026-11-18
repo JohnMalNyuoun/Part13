@@ -3,6 +3,8 @@ const app = express()
 const cors = require('cors')
 const authorsRouter = require('./controllers/authors')
 const blogsRouter = require('./controllers/blogs')
+const config = require('./utils/config')
+const database = require('./utils/database')
 const loginRouter = require('./controllers/login')
 const usersRouter = require('./controllers/users')
 const middleware = require('./utils/middleware')
@@ -13,6 +15,15 @@ app.use(middleware.requestLogger)
 
 app.get('/', (request, response) => {
   response.json({ message: 'Backend is running' })
+})
+
+app.post('/api/reset', async (request, response) => {
+  if (!config.TESTING) {
+    throw middleware.createHttpError(404, 'unknown endpoint')
+  }
+
+  await database.resetDatabase()
+  response.status(204).end()
 })
 
 app.use('/api/login', loginRouter)

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:test": "cross-env TESTING=true PORT=3001 JWT_SECRET=test-secret node index.js",
+    "test": "cross-env TESTING=true node --test --test-concurrency=1 ../tests/api_ch3.test.js"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +20,8 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

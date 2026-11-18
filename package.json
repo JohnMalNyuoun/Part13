@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node backend/index.js"
+    "start": "node backend/index.js",
+    "start:test": "npm --prefix backend run start:test",
+    "test": "npm --prefix backend test"
   }
 }
