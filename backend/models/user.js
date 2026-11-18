@@ -2,7 +2,24 @@ const database = require('../utils/database')
 
 const findAll = async () => {
   const result = await database.query(
-    'SELECT id, name, username, "createdAt", "updatedAt" FROM users ORDER BY id'
+    `SELECT u.id, u.name, u.username, u."createdAt", u."updatedAt",
+            COALESCE(
+              json_agg(
+                json_build_object(
+                  'id', b.id,
+                  'title', b.title,
+                  'author', b.author,
+                  'url', b.url,
+                  'likes', b.likes
+                )
+                ORDER BY b.id
+              ) FILTER (WHERE b.id IS NOT NULL),
+              '[]'::json
+            ) AS blogs
+     FROM users u
+     LEFT JOIN blogs b ON b.user_id = u.id
+     GROUP BY u.id
+     ORDER BY u.id`
   )
   return result.rows
 }
