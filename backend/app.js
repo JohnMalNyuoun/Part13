@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const authorsRouter = require('./controllers/authors')
 const blogsRouter = require('./controllers/blogs')
 const loginRouter = require('./controllers/login')
 const usersRouter = require('./controllers/users')
@@ -15,6 +16,7 @@ app.get('/', (request, response) => {
 })
 
 app.use('/api/login', loginRouter)
+app.use('/api/authors', authorsRouter)
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 

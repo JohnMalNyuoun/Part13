@@ -21,6 +21,16 @@ const findAll = async (search) => {
   return result.rows
 }
 
+const getAuthorStats = async () => {
+  const result = await database.query(
+    `SELECT author, COUNT(*) AS blogs, COALESCE(SUM(likes), 0) AS likes
+     FROM blogs
+     GROUP BY author
+     ORDER BY COALESCE(SUM(likes), 0) DESC, author`
+  )
+  return result.rows
+}
+
 const create = async ({ title, author, url, likes = 0, userId }) => {
   const result = await database.query(
     `WITH created_blog AS (
@@ -74,6 +84,7 @@ const updateLikesById = async (id, likes) => {
 
 module.exports = {
   findAll,
+  getAuthorStats,
   create,
   findById,
   deleteById,
