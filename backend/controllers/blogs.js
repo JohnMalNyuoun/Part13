@@ -3,7 +3,12 @@ const Blog = require('../models/blog')
 const { createHttpError, userExtractor } = require('../utils/middleware')
 
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.findAll()
+  const { search } = request.query
+  if (search !== undefined && typeof search !== 'string') {
+    throw createHttpError(400, 'search must be a string')
+  }
+
+  const blogs = await Blog.findAll(search)
   response.json(blogs)
 })
 

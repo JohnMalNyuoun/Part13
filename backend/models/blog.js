@@ -1,6 +1,10 @@
 const database = require('../utils/database')
 
-const findAll = async () => {
+const findAll = async (search) => {
+  const whereClause = search === undefined ? '' : 'WHERE b.title ILIKE $1'
+  const values = search === undefined
+    ? []
+    : [`%${search.replace(/[\\%_]/g, '\\$&')}%`]
   const result = await database.query(
     `SELECT b.id, b.title, b.author, b.url, b.likes,
             CASE WHEN u.id IS NULL THEN NULL
@@ -8,7 +12,9 @@ const findAll = async () => {
             END AS user
      FROM blogs b
      LEFT JOIN users u ON u.id = b.user_id
-     ORDER BY b.id`
+     ${whereClause}
+     ORDER BY b.id`,
+    values
   )
   return result.rows
 }
