@@ -15,12 +15,20 @@ const findById = async (id) => {
   return result.rows[0] || null
 }
 
-const create = async ({ name, username }) => {
+const findByUsername = async (username) => {
   const result = await database.query(
-    `INSERT INTO users (name, username)
-     VALUES ($1, $2)
+    'SELECT id, name, username, "passwordHash" FROM users WHERE username = $1',
+    [username]
+  )
+  return result.rows[0] || null
+}
+
+const create = async ({ name, username, passwordHash }) => {
+  const result = await database.query(
+    `INSERT INTO users (name, username, "passwordHash")
+     VALUES ($1, $2, $3)
      RETURNING id, name, username, "createdAt", "updatedAt"`,
-    [name, username]
+    [name, username, passwordHash]
   )
   return result.rows[0]
 }
@@ -39,6 +47,7 @@ const updateNameByUsername = async (username, name) => {
 module.exports = {
   findAll,
   findById,
+  findByUsername,
   create,
   updateNameByUsername,
 }

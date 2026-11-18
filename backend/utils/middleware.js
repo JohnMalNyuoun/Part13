@@ -1,4 +1,7 @@
+const jwt = require('jsonwebtoken')
+const config = require('./config')
 const logger = require('./logger')
+const User = require('../models/user')
 
 const requestLogger = (request, response, next) => {
   const loggedBody = { ...request.body }
@@ -23,6 +26,35 @@ const createHttpError = (status, message) => {
   return error
 }
 
+const userExtractor = async (request, response, next) => {
+  const authorization = request.get('authorization')
+  if (!authorization || !authorization.startsWith('Bearer ')) {
+    throw createHttpError(401, 'token missing or invalid')
+  }
+  if (!config.JWT_SECRET) {
+    throw new Error('JWT_SECRET is missing. Add it to backend/.env.')
+  }
+
+  let decodedToken
+  try {
+    decodedToken = jwt.verify(authorization.slice(7), config.JWT_SECRET)
+  } catch {
+    throw createHttpError(401, 'token missing or invalid')
+  }
+
+  if (!decodedToken || !Number.isInteger(decodedToken.id) || decodedToken.id < 1) {
+    throw createHttpError(401, 'token missing or invalid')
+  }
+
+  const user = await User.findById(decodedToken.id)
+  if (!user) {
+    throw createHttpError(401, 'token missing or invalid')
+  }
+
+  request.user = user
+  next()
+}
+
 const errorHandler = (error, request, response, next) => {
   logger.error(error.message)
 
@@ -45,5 +77,6 @@ module.exports = {
   requestLogger,
   unknownEndpoint,
   createHttpError,
+  userExtractor,
   errorHandler,
 }

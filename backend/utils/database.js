@@ -30,23 +30,34 @@ const getPool = () => {
 
 const initializeDatabase = async () => {
   await getPool().query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL CHECK (length(btrim(name)) > 0),
+      username TEXT NOT NULL UNIQUE CHECK (length(btrim(username)) > 0),
+      "passwordHash" TEXT,
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  await getPool().query(
+    'ALTER TABLE users ADD COLUMN IF NOT EXISTS "passwordHash" TEXT'
+  )
+
+  await getPool().query(`
     CREATE TABLE IF NOT EXISTS blogs (
       id SERIAL PRIMARY KEY,
       title TEXT,
       author TEXT,
       url TEXT,
-      likes INTEGER DEFAULT 0
+      likes INTEGER DEFAULT 0,
+      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
     )
   `)
 
   await getPool().query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL CHECK (length(btrim(name)) > 0),
-      username TEXT NOT NULL UNIQUE CHECK (length(btrim(username)) > 0),
-      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
+    ALTER TABLE blogs
+    ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
   `)
 }
 

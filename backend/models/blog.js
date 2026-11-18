@@ -2,17 +2,29 @@ const database = require('../utils/database')
 
 const findAll = async () => {
   const result = await database.query(
-    'SELECT id, title, author, url, likes FROM blogs ORDER BY id'
+    `SELECT b.id, b.title, b.author, b.url, b.likes,
+            CASE WHEN u.id IS NULL THEN NULL
+                 ELSE json_build_object('id', u.id, 'username', u.username, 'name', u.name)
+            END AS user
+     FROM blogs b
+     LEFT JOIN users u ON u.id = b.user_id
+     ORDER BY b.id`
   )
   return result.rows
 }
 
-const create = async ({ title, author, url, likes = 0 }) => {
+const create = async ({ title, author, url, likes = 0, userId }) => {
   const result = await database.query(
-    `INSERT INTO blogs (title, author, url, likes)
-     VALUES ($1, $2, $3, $4)
-     RETURNING id, title, author, url, likes`,
-    [title, author, url, likes]
+    `WITH created_blog AS (
+       INSERT INTO blogs (title, author, url, likes, user_id)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, title, author, url, likes, user_id
+     )
+     SELECT b.id, b.title, b.author, b.url, b.likes,
+            json_build_object('id', u.id, 'username', u.username, 'name', u.name) AS user
+     FROM created_blog b
+     JOIN users u ON u.id = b.user_id`,
+    [title, author, url, likes, userId]
   )
   return result.rows[0]
 }
@@ -24,10 +36,18 @@ const deleteById = async (id) => {
 
 const updateLikesById = async (id, likes) => {
   const result = await database.query(
-    `UPDATE blogs
-     SET likes = $2
-     WHERE id = $1
-     RETURNING id, title, author, url, likes`,
+    `WITH updated_blog AS (
+       UPDATE blogs
+       SET likes = $2
+       WHERE id = $1
+       RETURNING id, title, author, url, likes, user_id
+     )
+     SELECT b.id, b.title, b.author, b.url, b.likes,
+            CASE WHEN u.id IS NULL THEN NULL
+                 ELSE json_build_object('id', u.id, 'username', u.username, 'name', u.name)
+            END AS user
+     FROM updated_blog b
+     LEFT JOIN users u ON u.id = b.user_id`,
     [id, likes]
   )
   return result.rows[0] || null

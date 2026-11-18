@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const blogsRouter = require('./controllers/blogs')
+const loginRouter = require('./controllers/login')
 const usersRouter = require('./controllers/users')
 const middleware = require('./utils/middleware')
 
@@ -13,6 +14,7 @@ app.get('/', (request, response) => {
   response.json({ message: 'Backend is running' })
 })
 
+app.use('/api/login', loginRouter)
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 

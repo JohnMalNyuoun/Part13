@@ -1,14 +1,14 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
-const { createHttpError } = require('../utils/middleware')
+const { createHttpError, userExtractor } = require('../utils/middleware')
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.findAll()
   response.json(blogs)
 })
 
-blogsRouter.post('/', async (request, response) => {
-  const blog = await Blog.create(request.body)
+blogsRouter.post('/', userExtractor, async (request, response) => {
+  const blog = await Blog.create({ ...request.body, userId: request.user.id })
   response.status(201).json(blog)
 })
 

@@ -1,4 +1,5 @@
 const usersRouter = require('express').Router()
+const bcrypt = require('bcryptjs')
 const User = require('../models/user')
 const { createHttpError } = require('../utils/middleware')
 
@@ -14,11 +15,15 @@ usersRouter.get('/', async (request, response) => {
 })
 
 usersRouter.post('/', async (request, response) => {
-  const { name, username } = request.body || {}
+  const { name, username, password } = request.body || {}
   validateNonEmptyString(name, 'name')
   validateNonEmptyString(username, 'username')
+  if (typeof password !== 'string' || password.length < 3) {
+    throw createHttpError(400, 'password must be at least 3 characters long')
+  }
 
-  const user = await User.create({ name, username })
+  const passwordHash = await bcrypt.hash(password, 10)
+  const user = await User.create({ name, username, passwordHash })
   response.status(201).json(user)
 })
 
