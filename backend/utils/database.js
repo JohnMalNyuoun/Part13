@@ -81,7 +81,10 @@ const close = async () => {
 }
 
 const resetDatabase = async () => {
-  await getPool().query('TRUNCATE TABLE blogs, users RESTART IDENTITY CASCADE')
+  await getPool().query(`
+    TRUNCATE TABLE sessions, reading_lists, blogs, users
+    RESTART IDENTITY CASCADE
+  `)
 }
 
 module.exports = {

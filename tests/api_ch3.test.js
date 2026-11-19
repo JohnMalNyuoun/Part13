@@ -78,7 +78,7 @@ test('POST /api/reset clears users and blogs', async () => {
     userId: 9999,
     blogId: createdBlog.id,
   })
-  assert.equal(response.status, 400)
+  assert.equal(response.status, 404)
   assert.deepEqual(await response.json(), {
     error: 'userId does not refer to an existing user',
   })
@@ -87,7 +87,7 @@ test('POST /api/reset clears users and blogs', async () => {
     userId: createdUser.id,
     blogId: 9999,
   })
-  assert.equal(response.status, 400)
+  assert.equal(response.status, 404)
   assert.deepEqual(await response.json(), {
     error: 'blogId does not refer to an existing blog',
   })
@@ -97,11 +97,17 @@ test('POST /api/reset clears users and blogs', async () => {
     blogId: createdBlog.id,
   })
   assert.equal(response.status, 201)
-  assert.deepEqual(await response.json(), {
+  const readingListEntry = await response.json()
+  assert.equal(readingListEntry.userId, createdUser.id)
+  assert.equal(readingListEntry.blogId, createdBlog.id)
+  assert.equal(readingListEntry.read, false)
+  assert.ok(Number.isInteger(readingListEntry.id))
+
+  response = await postJson('/api/readinglists', {
     userId: createdUser.id,
     blogId: createdBlog.id,
-    read: false,
   })
+  assert.equal(response.status, 400)
 
   response = await fetch(`${baseUrl}/api/users/${createdUser.id}`)
   assert.equal(response.status, 200)
@@ -150,7 +156,7 @@ test('POST /api/reset clears users and blogs', async () => {
   const { token: otherUserToken } = await response.json()
 
   response = await putJson(`/api/readinglists/${readingListRowId}`, { read: true }, otherUserToken)
-  assert.equal(response.status, 403)
+  assert.equal(response.status, 401)
 
   response = await fetch(`${baseUrl}/api/users/${createdUser.id}`)
   assert.equal(response.status, 200)

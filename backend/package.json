@@ -7,7 +7,7 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "start:test": "cross-env TESTING=true PORT=3001 JWT_SECRET=test-secret node index.js",
-    "test": "cross-env TESTING=true node --test --test-concurrency=1 ../tests/api_ch3.test.js"
+    "test": "cross-env TESTING=true node --test --test-concurrency=1 ../tests/*.test.js"
   },
   "keywords": [],
   "author": "",
