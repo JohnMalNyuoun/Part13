@@ -67,7 +67,7 @@ const updateLikesById = async (id, likes) => {
   const result = await database.query(
     `WITH updated_blog AS (
        UPDATE blogs
-       SET likes = $2
+       SET likes = $2, "updatedAt" = CURRENT_TIMESTAMP
        WHERE id = $1
        RETURNING id, title, author, url, likes, user_id
      )

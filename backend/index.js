@@ -1,11 +1,11 @@
 const app = require('./app')
 const config = require('./utils/config')
-const { initializeDatabase } = require('./utils/database')
+const { runMigrations } = require('./utils/database')
 const logger = require('./utils/logger')
 
 const start = async () => {
   try {
-    await initializeDatabase()
+    await runMigrations()
     app.listen(config.PORT, () => {
       logger.info(`Server running on port ${config.PORT}`)
     })
