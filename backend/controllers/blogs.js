@@ -13,6 +13,13 @@ blogsRouter.get('/', async (request, response) => {
 })
 
 blogsRouter.post('/', userExtractor, async (request, response) => {
+  const { year } = request.body || {}
+  const currentYear = new Date().getFullYear()
+  if (year !== undefined &&
+      (!Number.isInteger(year) || year < 1991 || year > currentYear)) {
+    throw createHttpError(400, `year must be an integer between 1991 and ${currentYear}`)
+  }
+
   const blog = await Blog.create({ ...request.body, userId: request.user.id })
   response.status(201).json(blog)
 })

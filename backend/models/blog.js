@@ -8,7 +8,7 @@ const findAll = async (search) => {
     ? []
     : [`%${search.replace(/[\\%_]/g, '\\$&')}%`]
   const result = await database.query(
-    `SELECT b.id, b.title, b.author, b.url, b.likes,
+    `SELECT b.id, b.title, b.author, b.url, b.likes, b.year,
             CASE WHEN u.id IS NULL THEN NULL
                  ELSE json_build_object('id', u.id, 'username', u.username, 'name', u.name)
             END AS user
@@ -31,18 +31,18 @@ const getAuthorStats = async () => {
   return result.rows
 }
 
-const create = async ({ title, author, url, likes = 0, userId }) => {
+const create = async ({ title, author, url, likes = 0, userId, year }) => {
   const result = await database.query(
     `WITH created_blog AS (
-       INSERT INTO blogs (title, author, url, likes, user_id)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, title, author, url, likes, user_id
+       INSERT INTO blogs (title, author, url, likes, user_id, year)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, title, author, url, likes, user_id, year
      )
-     SELECT b.id, b.title, b.author, b.url, b.likes,
+     SELECT b.id, b.title, b.author, b.url, b.likes, b.year,
             json_build_object('id', u.id, 'username', u.username, 'name', u.name) AS user
      FROM created_blog b
      JOIN users u ON u.id = b.user_id`,
-    [title, author, url, likes, userId]
+    [title, author, url, likes, userId, year]
   )
   return result.rows[0]
 }
@@ -69,9 +69,9 @@ const updateLikesById = async (id, likes) => {
        UPDATE blogs
        SET likes = $2, "updatedAt" = CURRENT_TIMESTAMP
        WHERE id = $1
-       RETURNING id, title, author, url, likes, user_id
+       RETURNING id, title, author, url, likes, user_id, year
      )
-     SELECT b.id, b.title, b.author, b.url, b.likes,
+     SELECT b.id, b.title, b.author, b.url, b.likes, b.year,
             CASE WHEN u.id IS NULL THEN NULL
                  ELSE json_build_object('id', u.id, 'username', u.username, 'name', u.name)
             END AS user

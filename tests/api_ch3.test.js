@@ -35,12 +35,28 @@ test('POST /api/reset clears users and blogs', async () => {
   assert.equal(response.status, 200)
   const { token } = await response.json()
 
+  const currentYear = new Date().getFullYear()
+  for (const year of [1990, currentYear + 1, 2000.5]) {
+    response = await postJson('/api/blogs', {
+      title: 'Invalid Year Blog',
+      author: 'Test Author',
+      url: 'https://example.test/invalid-year',
+      year,
+    }, token)
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+      error: `year must be an integer between 1991 and ${currentYear}`,
+    })
+  }
+
   response = await postJson('/api/blogs', {
     title: 'Test Blog',
     author: 'Test Author',
     url: 'https://example.test/blog',
+    year: currentYear,
   }, token)
   assert.equal(response.status, 201)
+  assert.equal((await response.json()).year, currentYear)
 
   response = await postJson('/api/reset')
   assert.equal(response.status, 204)

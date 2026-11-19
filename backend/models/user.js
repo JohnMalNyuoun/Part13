@@ -10,7 +10,8 @@ const findAll = async () => {
                   'title', b.title,
                   'author', b.author,
                   'url', b.url,
-                  'likes', b.likes
+                  'likes', b.likes,
+                  'year', b.year
                 )
                 ORDER BY b.id
               ) FILTER (WHERE b.id IS NOT NULL),
