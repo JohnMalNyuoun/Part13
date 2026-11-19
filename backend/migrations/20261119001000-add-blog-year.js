@@ -1,7 +1,7 @@
 const up = async (client) => {
   await client.query(`
     ALTER TABLE blogs
-    ADD COLUMN year INTEGER CHECK (year IS NULL OR year >= 1991)
+    ADD COLUMN IF NOT EXISTS year INTEGER CHECK (year IS NULL OR year >= 1991)
   `)
 }
 
