@@ -21,6 +21,11 @@ const putJson = (path, body, token) => fetch(`${baseUrl}${path}`, {
   body: JSON.stringify(body),
 })
 
+const deleteWithToken = (path, token) => fetch(`${baseUrl}${path}`, {
+  method: 'DELETE',
+  headers: { Authorization: `Bearer ${token}` },
+})
+
 test('GET / responds with HTTP 200', async () => {
   const response = await fetch(`${baseUrl}/`)
   assert.equal(response.status, 200)
@@ -159,6 +164,16 @@ test('POST /api/reset clears users and blogs', async () => {
   response = await fetch(`${baseUrl}/api/users/${createdUser.id}?read=false`)
   assert.equal(response.status, 200)
   assert.deepEqual((await response.json()).readings, [])
+
+  response = await deleteWithToken('/api/logout', token)
+  assert.equal(response.status, 204)
+
+  response = await postJson('/api/blogs', {
+    title: 'Logged Out Blog',
+    author: 'Test Author',
+    url: 'https://example.test/logged-out',
+  }, token)
+  assert.equal(response.status, 401)
 
   response = await postJson('/api/reset')
   assert.equal(response.status, 204)

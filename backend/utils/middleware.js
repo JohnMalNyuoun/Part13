@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const config = require('./config')
 const logger = require('./logger')
+const Session = require('../models/session')
 const User = require('../models/user')
 
 const requestLogger = (request, response, next) => {
@@ -46,11 +47,17 @@ const userExtractor = async (request, response, next) => {
     throw createHttpError(401, 'token missing or invalid')
   }
 
-  const user = await User.findById(decodedToken.id)
-  if (!user) {
+  const token = authorization.slice(7)
+  if (!await Session.isValid(token, decodedToken.id)) {
     throw createHttpError(401, 'token missing or invalid')
   }
 
+  const user = await User.findById(decodedToken.id)
+  if (!user || user.disabled) {
+    throw createHttpError(401, 'token missing or invalid')
+  }
+
+  request.token = token
   request.user = user
   next()
 }

@@ -27,7 +27,7 @@ const findAll = async () => {
 
 const findById = async (id) => {
   const result = await database.query(
-    'SELECT id, name, username, "createdAt", "updatedAt" FROM users WHERE id = $1',
+    'SELECT id, name, username, disabled, "createdAt", "updatedAt" FROM users WHERE id = $1',
     [id]
   )
   return result.rows[0] || null
@@ -68,7 +68,7 @@ const findWithReadingsById = async (id, read) => {
 
 const findByUsername = async (username) => {
   const result = await database.query(
-    'SELECT id, name, username, "passwordHash" FROM users WHERE username = $1',
+    'SELECT id, name, username, "passwordHash", disabled FROM users WHERE username = $1',
     [username]
   )
   return result.rows[0] || null
