@@ -45,7 +45,7 @@ usersRouter.get('/:id', async (request, response) => {
     throw createHttpError(400, 'id must be a positive integer')
   }
 
-  const user = await User.findById(id)
+  const user = await User.findWithReadingsById(id)
   if (!user) {
     throw createHttpError(404, 'user not found')
   }

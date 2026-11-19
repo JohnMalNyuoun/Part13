@@ -33,6 +33,33 @@ const findById = async (id) => {
   return result.rows[0] || null
 }
 
+const findWithReadingsById = async (id) => {
+  const result = await database.query(
+    `SELECT u.id, u.name, u.username, u."createdAt", u."updatedAt",
+            COALESCE(
+              json_agg(
+                json_build_object(
+                  'id', b.id,
+                  'url', b.url,
+                  'title', b.title,
+                  'author', b.author,
+                  'likes', b.likes,
+                  'year', b.year
+                )
+                ORDER BY b.id
+              ) FILTER (WHERE b.id IS NOT NULL),
+              '[]'::json
+            ) AS readings
+     FROM users u
+     LEFT JOIN reading_lists rl ON rl.user_id = u.id
+     LEFT JOIN blogs b ON b.id = rl.blog_id
+     WHERE u.id = $1
+     GROUP BY u.id`,
+    [id]
+  )
+  return result.rows[0] || null
+}
+
 const findByUsername = async (username) => {
   const result = await database.query(
     'SELECT id, name, username, "passwordHash" FROM users WHERE username = $1',
@@ -65,6 +92,7 @@ const updateNameByUsername = async (username, name) => {
 module.exports = {
   findAll,
   findById,
+  findWithReadingsById,
   findByUsername,
   create,
   updateNameByUsername,

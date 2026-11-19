@@ -27,6 +27,7 @@ test('POST /api/reset clears users and blogs', async () => {
     password: 'test-password',
   })
   assert.equal(response.status, 201)
+  const createdUser = await response.json()
 
   response = await postJson('/api/login', {
     username: 'test-reset-user',
@@ -56,7 +57,49 @@ test('POST /api/reset clears users and blogs', async () => {
     year: currentYear,
   }, token)
   assert.equal(response.status, 201)
-  assert.equal((await response.json()).year, currentYear)
+  const createdBlog = await response.json()
+  assert.equal(createdBlog.year, currentYear)
+
+  response = await postJson('/api/readinglists', {
+    userId: 9999,
+    blogId: createdBlog.id,
+  })
+  assert.equal(response.status, 400)
+  assert.deepEqual(await response.json(), {
+    error: 'userId does not refer to an existing user',
+  })
+
+  response = await postJson('/api/readinglists', {
+    userId: createdUser.id,
+    blogId: 9999,
+  })
+  assert.equal(response.status, 400)
+  assert.deepEqual(await response.json(), {
+    error: 'blogId does not refer to an existing blog',
+  })
+
+  response = await postJson('/api/readinglists', {
+    userId: createdUser.id,
+    blogId: createdBlog.id,
+  })
+  assert.equal(response.status, 201)
+  assert.deepEqual(await response.json(), {
+    userId: createdUser.id,
+    blogId: createdBlog.id,
+    read: false,
+  })
+
+  response = await fetch(`${baseUrl}/api/users/${createdUser.id}`)
+  assert.equal(response.status, 200)
+  const userWithReadings = await response.json()
+  assert.deepEqual(userWithReadings.readings, [{
+    id: createdBlog.id,
+    url: 'https://example.test/blog',
+    title: 'Test Blog',
+    author: 'Test Author',
+    likes: 0,
+    year: currentYear,
+  }])
 
   response = await postJson('/api/reset')
   assert.equal(response.status, 204)
