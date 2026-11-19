@@ -116,6 +116,17 @@ test('POST /api/reset clears users and blogs', async () => {
     },
   }])
 
+  response = await fetch(`${baseUrl}/api/users/${createdUser.id}?read=false`)
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).readings.length, 1)
+
+  response = await fetch(`${baseUrl}/api/users/${createdUser.id}?read=true`)
+  assert.equal(response.status, 200)
+  assert.deepEqual((await response.json()).readings, [])
+
+  response = await fetch(`${baseUrl}/api/users/${createdUser.id}?read=invalid`)
+  assert.equal(response.status, 400)
+
   response = await putJson(`/api/readinglists/${readingListRowId}`, { read: true }, token)
   assert.equal(response.status, 200)
   assert.equal((await response.json()).read, true)
@@ -140,6 +151,14 @@ test('POST /api/reset clears users and blogs', async () => {
   assert.equal(response.status, 200)
   const updatedUser = await response.json()
   assert.equal(updatedUser.readings[0].readingList.read, true)
+
+  response = await fetch(`${baseUrl}/api/users/${createdUser.id}?read=true`)
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).readings.length, 1)
+
+  response = await fetch(`${baseUrl}/api/users/${createdUser.id}?read=false`)
+  assert.equal(response.status, 200)
+  assert.deepEqual((await response.json()).readings, [])
 
   response = await postJson('/api/reset')
   assert.equal(response.status, 204)

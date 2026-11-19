@@ -33,7 +33,7 @@ const findById = async (id) => {
   return result.rows[0] || null
 }
 
-const findWithReadingsById = async (id) => {
+const findWithReadingsById = async (id, read) => {
   const result = await database.query(
     `SELECT u.id, u.name, u.username, u."createdAt", u."updatedAt",
             COALESCE(
@@ -55,11 +55,13 @@ const findWithReadingsById = async (id) => {
               '[]'::json
             ) AS readings
      FROM users u
-     LEFT JOIN reading_lists rl ON rl.user_id = u.id
+     LEFT JOIN reading_lists rl
+       ON rl.user_id = u.id
+      AND ($2::boolean IS NULL OR rl.read = $2::boolean)
      LEFT JOIN blogs b ON b.id = rl.blog_id
      WHERE u.id = $1
      GROUP BY u.id`,
-    [id]
+    [id, read ?? null]
   )
   return result.rows[0] || null
 }

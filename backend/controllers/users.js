@@ -45,7 +45,13 @@ usersRouter.get('/:id', async (request, response) => {
     throw createHttpError(400, 'id must be a positive integer')
   }
 
-  const user = await User.findWithReadingsById(id)
+  const { read } = request.query
+  if (read !== undefined && read !== 'true' && read !== 'false') {
+    throw createHttpError(400, 'read must be true or false')
+  }
+
+  const readFilter = read === undefined ? undefined : read === 'true'
+  const user = await User.findWithReadingsById(id, readFilter)
   if (!user) {
     throw createHttpError(404, 'user not found')
   }
