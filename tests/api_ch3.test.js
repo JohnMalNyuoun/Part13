@@ -12,6 +12,15 @@ const postJson = (path, body, token) => fetch(`${baseUrl}${path}`, {
   body: JSON.stringify(body),
 })
 
+const putJson = (path, body, token) => fetch(`${baseUrl}${path}`, {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  },
+  body: JSON.stringify(body),
+})
+
 test('GET / responds with HTTP 200', async () => {
   const response = await fetch(`${baseUrl}/`)
   assert.equal(response.status, 200)
@@ -106,6 +115,31 @@ test('POST /api/reset clears users and blogs', async () => {
       id: readingListRowId,
     },
   }])
+
+  response = await putJson(`/api/readinglists/${readingListRowId}`, { read: true }, token)
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).read, true)
+
+  response = await postJson('/api/users', {
+    name: 'Another User',
+    username: 'test-reading-list-owner',
+    password: 'test-password',
+  })
+  assert.equal(response.status, 201)
+  response = await postJson('/api/login', {
+    username: 'test-reading-list-owner',
+    password: 'test-password',
+  })
+  assert.equal(response.status, 200)
+  const { token: otherUserToken } = await response.json()
+
+  response = await putJson(`/api/readinglists/${readingListRowId}`, { read: true }, otherUserToken)
+  assert.equal(response.status, 403)
+
+  response = await fetch(`${baseUrl}/api/users/${createdUser.id}`)
+  assert.equal(response.status, 200)
+  const updatedUser = await response.json()
+  assert.equal(updatedUser.readings[0].readingList.read, true)
 
   response = await postJson('/api/reset')
   assert.equal(response.status, 204)
