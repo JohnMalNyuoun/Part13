@@ -44,7 +44,11 @@ const findWithReadingsById = async (id) => {
                   'title', b.title,
                   'author', b.author,
                   'likes', b.likes,
-                  'year', b.year
+                  'year', b.year,
+                  'readingList', json_build_object(
+                    'read', rl.read,
+                    'id', rl.id
+                  )
                 )
                 ORDER BY b.id
               ) FILTER (WHERE b.id IS NOT NULL),

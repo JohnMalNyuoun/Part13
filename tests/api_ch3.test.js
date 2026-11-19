@@ -92,6 +92,8 @@ test('POST /api/reset clears users and blogs', async () => {
   response = await fetch(`${baseUrl}/api/users/${createdUser.id}`)
   assert.equal(response.status, 200)
   const userWithReadings = await response.json()
+  const readingListRowId = userWithReadings.readings[0].readingList.id
+  assert.ok(Number.isInteger(readingListRowId))
   assert.deepEqual(userWithReadings.readings, [{
     id: createdBlog.id,
     url: 'https://example.test/blog',
@@ -99,6 +101,10 @@ test('POST /api/reset clears users and blogs', async () => {
     author: 'Test Author',
     likes: 0,
     year: currentYear,
+    readingList: {
+      read: false,
+      id: readingListRowId,
+    },
   }])
 
   response = await postJson('/api/reset')
